@@ -1,0 +1,3 @@
+google-sheets-api.json
+*.pyc
+__pycache__/
