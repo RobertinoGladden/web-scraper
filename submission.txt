@@ -1,0 +1,20 @@
+# Submission ETL Pipeline
+
+## Project Overview
+ETL Pipeline Sederhana untuk Scraping Data Fashion dari https://fashion-studio.dicoding.dev/.
+- Ekstraksi: Mengambil 1000 data dari 50 halaman dengan kolom Title, Price, Rating, Colors, Size, Gender, timestamp, dan page_number.
+- Transformasi: Membersihkan data, mengonversi Price ke IDR (Rp16.000), dan menyesuaikan tipe data. Data setelah transformasi: ~1000 record.
+- Loading: Menyimpan data ke products.csv dan Google Sheets (ETL_Pipeline_Results) dengan akses "Anyone with the link" sebagai editor.
+- Unit Test: Disimpan di folder tests dengan coverage ~91%.
+
+## Menjalankan Skrip ETL Pipeline
+python3 main.py
+
+## Menjalankan Unit Test pada Folder tests
+python3 -m pytest tests
+
+## Menjalankan Test Coverage pada Folder tests
+pytest --cov=utils tests/ --cov-report term-missing
+
+## URL Google Sheets
+https://docs.google.com/spreadsheets/d/1MODv4lmOuj0bQKbKXh3eM6ZGH-QRrfBrdMsFyVcOmHQ/edit?gid=0#gid=0
