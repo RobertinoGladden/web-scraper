@@ -13,13 +13,16 @@ def scrape_data():
     Returns a DataFrame with Title, Price, Rating, Colors, Size, Gender, timestamp, and page_number.
     """
     try:
-        base_url = "https://fashion-studio.dicoding.dev/?page={}"
         all_data = []
         pages_scraped = 0
         products_scraped = 0
         
         for page in range(1, 51):
-            url = base_url.format(page)
+            # Correct URL construction based on page number
+            if page == 1:
+                url = "https://fashion-studio.dicoding.dev/"
+            else:
+                url = f"https://fashion-studio.dicoding.dev/page{page}"
             logger.info(f"Scraping page {page}: {url}")
             
             try:
@@ -42,8 +45,22 @@ def scrape_data():
                 
                 for idx, product in enumerate(products):
                     try:
-                        title = product.select_one('.product-title').text.strip() if product.select_one('.product-title') else "Untitled Product"
-                        price = product.select_one('.price').text.strip().replace('$', '') if product.select_one('.price') else "0"
+                        # Robust title extraction with multiple fallbacks
+                        title_elem = product.select_one('.product-title')
+                        if not title_elem:
+                            title_elem = product.find('h3') or product.find('h4') or product.find('div', class_=lambda x: x and 'title' in x.lower())
+                        title = title_elem.text.strip() if title_elem else "Unknown Product"
+                        
+                        if title == "Unknown Product":
+                            logger.warning(f"Product {idx + 1} on page {page} has no valid title. HTML snippet: {str(product)[:200]}")
+                        
+                        # Price parsing with fallback
+                        price_text = product.select_one('.price').text.strip().replace('$', '') if product.select_one('.price') else "0"
+                        price = 0
+                        try:
+                            price = float(price_text) if price_text.replace('.', '').isdigit() else 0
+                        except ValueError:
+                            logger.warning(f"Invalid price format for product {idx + 1} on page {page}: {price_text}")
                         
                         p_tags = product.find_all('p', style="font-size: 14px; color: #777;")
                         rating = "0.0 / 5" 
@@ -54,18 +71,13 @@ def scrape_data():
                         for p in p_tags:
                             text = p.text.strip()
                             if text.startswith("Rating:"):
-                                rating = text.replace("Rating: ⭐ ", "")
+                                rating = text.replace("Rating: ⭐ ", "").replace("Not Rated", "0.0 / 5")
                             elif text.endswith("Colors"):
                                 colors = text
                             elif text.startswith("Size:"):
                                 size = text
                             elif text.startswith("Gender:"):
                                 gender = text
-                        
-                        if price == "Price Unavailable":
-                            price = "0"
-                        if "Not Rated" in rating:
-                            rating = "0.0 / 5"
                         
                         all_data.append({
                             'Title': title,
@@ -78,14 +90,14 @@ def scrape_data():
                             'page_number': page
                         })
                         products_scraped += 1
-                        logger.debug(f"Scraped product {idx + 1} on page {page}: {title}")
+                        logger.debug(f"Scraped product {idx + 1} on page {page}: {title} (Price: {price})")
                         
                     except AttributeError as e:
                         logger.warning(f"Failed to parse product {idx + 1} on page {page}: {str(e)}")
                         continue
                 
                 pages_scraped += 1
-                logger.info(f"Page {page} scraped successfully. Products collected: {products_scraped}")
+                logger.info(f"Page {page} scraped successfully. Total products collected so far: {products_scraped}")
                 
             except requests.RequestException as e:
                 logger.error(f"Failed to fetch page {page}: {str(e)}")
@@ -97,6 +109,8 @@ def scrape_data():
         
         df = pd.DataFrame(all_data)
         logger.info(f"Extraction completed. Total pages scraped: {pages_scraped}, Total products: {len(df)}")
+        if len(df) != 1000:
+            logger.warning(f"Expected 1000 products, but only {len(df)} were scraped. Check for missing pages or products.")
         return df
     
     except Exception as e:
