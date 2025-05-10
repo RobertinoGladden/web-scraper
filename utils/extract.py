@@ -42,23 +42,20 @@ def scrape_data():
                 
                 for idx, product in enumerate(products):
                     try:
-                        # Robust title extraction
                         title_elem = product.select_one('.product-title') or product.find('h3') or product.find('h4')
                         title = title_elem.text.strip() if title_elem else None
                         if not title or title.lower() == "unknown product":
                             logger.warning(f"Skipping product {idx + 1} on page {page}: Invalid or missing title.")
                             continue
                         
-                        # Price parsing
                         price_elem = product.select_one('.price')
                         price_text = price_elem.text.strip().replace('$', '') if price_elem else "0"
                         try:
                             price = float(price_text) if price_text.replace('.', '').isdigit() else 0
                         except ValueError:
                             logger.warning(f"Invalid price format for product {idx + 1} on page {page}: {price_text}")
-                            continue  # Skip if price is invalid
+                            continue
                         
-                        # Extract other fields
                         p_tags = product.find_all('p', style="font-size: 14px; color: #777;")
                         rating = "0.0 / 5"
                         colors = "0 Colors"
@@ -76,7 +73,6 @@ def scrape_data():
                             elif text.startswith("Gender:"):
                                 gender = text.replace("Gender: ", "")
                         
-                        # Skip if critical fields are missing
                         if not size or not gender or price <= 0:
                             logger.warning(f"Skipping product {idx + 1} on page {page}: Missing critical fields or invalid price.")
                             continue

@@ -25,12 +25,10 @@ class TestExtract(unittest.TestCase):
         """
         mock_response.raise_for_status = MagicMock()
 
-        # Simulate empty pages after the first page
         mock_empty_response = MagicMock()
         mock_empty_response.text = "<html><body></body></html>"
         mock_empty_response.raise_for_status = MagicMock()
 
-        # Return the product on page 1, then empty pages
         mock_get.side_effect = [mock_response] + [mock_empty_response] * 49
 
         df = scrape_data()
