@@ -18,7 +18,6 @@ def scrape_data():
         products_scraped = 0
         
         for page in range(1, 51):
-            # Correct URL construction based on page number
             if page == 1:
                 url = "https://fashion-studio.dicoding.dev/"
             else:
@@ -34,8 +33,6 @@ def scrape_data():
                 logger.info(f"Response status code: {response.status_code}")
                 
                 soup = BeautifulSoup(response.text, 'html.parser')
-                logger.debug(f"HTML content: {soup.prettify()[:500]}")
-                
                 products = soup.select('.collection-card')
                 if not products:
                     logger.warning(f"No products found on page {page}. Selector '.collection-card' may be incorrect.")
@@ -45,28 +42,28 @@ def scrape_data():
                 
                 for idx, product in enumerate(products):
                     try:
-                        # Robust title extraction with multiple fallbacks
-                        title_elem = product.select_one('.product-title')
-                        if not title_elem:
-                            title_elem = product.find('h3') or product.find('h4') or product.find('div', class_=lambda x: x and 'title' in x.lower())
-                        title = title_elem.text.strip() if title_elem else "Unknown Product"
+                        # Robust title extraction
+                        title_elem = product.select_one('.product-title') or product.find('h3') or product.find('h4')
+                        title = title_elem.text.strip() if title_elem else None
+                        if not title or title.lower() == "unknown product":
+                            logger.warning(f"Skipping product {idx + 1} on page {page}: Invalid or missing title.")
+                            continue
                         
-                        if title == "Unknown Product":
-                            logger.warning(f"Product {idx + 1} on page {page} has no valid title. HTML snippet: {str(product)[:200]}")
-                        
-                        # Price parsing with fallback
-                        price_text = product.select_one('.price').text.strip().replace('$', '') if product.select_one('.price') else "0"
-                        price = 0
+                        # Price parsing
+                        price_elem = product.select_one('.price')
+                        price_text = price_elem.text.strip().replace('$', '') if price_elem else "0"
                         try:
                             price = float(price_text) if price_text.replace('.', '').isdigit() else 0
                         except ValueError:
                             logger.warning(f"Invalid price format for product {idx + 1} on page {page}: {price_text}")
+                            continue  # Skip if price is invalid
                         
+                        # Extract other fields
                         p_tags = product.find_all('p', style="font-size: 14px; color: #777;")
-                        rating = "0.0 / 5" 
-                        colors = "0 Colors" 
-                        size = "Size: Unknown" 
-                        gender = "Gender: Unknown" 
+                        rating = "0.0 / 5"
+                        colors = "0 Colors"
+                        size = None
+                        gender = None
                         
                         for p in p_tags:
                             text = p.text.strip()
@@ -75,9 +72,14 @@ def scrape_data():
                             elif text.endswith("Colors"):
                                 colors = text
                             elif text.startswith("Size:"):
-                                size = text
+                                size = text.replace("Size: ", "")
                             elif text.startswith("Gender:"):
-                                gender = text
+                                gender = text.replace("Gender: ", "")
+                        
+                        # Skip if critical fields are missing
+                        if not size or not gender or price <= 0:
+                            logger.warning(f"Skipping product {idx + 1} on page {page}: Missing critical fields or invalid price.")
+                            continue
                         
                         all_data.append({
                             'Title': title,
@@ -109,8 +111,6 @@ def scrape_data():
         
         df = pd.DataFrame(all_data)
         logger.info(f"Extraction completed. Total pages scraped: {pages_scraped}, Total products: {len(df)}")
-        if len(df) != 1000:
-            logger.warning(f"Expected 1000 products, but only {len(df)} were scraped. Check for missing pages or products.")
         return df
     
     except Exception as e:

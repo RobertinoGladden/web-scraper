@@ -87,7 +87,7 @@ class TestLoad(unittest.TestCase):
         mock_spreadsheet = MagicMock()
         
         mock_response = MagicMock()
-        mock_response.json.return_value = {'error': {'message': 'Share error'}}
+        mock_response.json.return_value = {'error': {'code': 400, 'message': 'Share error'}}
         
         mock_client.open.side_effect = gspread.SpreadsheetNotFound
         mock_client.create.return_value = mock_spreadsheet
@@ -126,7 +126,7 @@ class TestLoad(unittest.TestCase):
         mock_worksheet = MagicMock()
         
         mock_response = MagicMock()
-        mock_response.json.return_value = {'error': {'message': 'Clear error'}}
+        mock_response.json.return_value = {'error': {'code': 400, 'message': 'Clear error'}}
         
         mock_client.open.return_value = mock_spreadsheet
         mock_spreadsheet.get_worksheet.return_value = mock_worksheet
@@ -145,7 +145,7 @@ class TestLoad(unittest.TestCase):
         mock_worksheet = MagicMock()
         
         mock_response = MagicMock()
-        mock_response.json.return_value = {'error': {'message': 'Update error'}}
+        mock_response.json.return_value = {'error': {'code': 400, 'message': 'Update error'}}
         
         mock_client.open.return_value = mock_spreadsheet
         mock_spreadsheet.get_worksheet.return_value = mock_worksheet
