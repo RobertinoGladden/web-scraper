@@ -29,7 +29,7 @@ This project implements an ETL pipeline to extract data from a fashion website, 
 1. Clone the repository:
    ```bash
    git clone <repository-url>
-   cd Dicoding ETL Pipeline Sederhana
+   cd web-scraper
    ```
 2. Install the required dependencies:
    ```bash
@@ -98,11 +98,11 @@ This command executes all tests in the `tests/` directory and generates a covera
 Name                 Stmts   Miss  Cover   Missing
 --------------------------------------------------
 utils\__init__.py        0      0   100%
-utils\extract.py        71      6    92%   83-85, 102-104
-utils\load.py           61     10    84%   51-52, 70-72, 77-79, 82-83
-utils\transform.py      43      0   100%
+utils\extract.py        80      9    89%   55-57, 93-95, 112-114
+utils\load.py           61      0   100%
+utils\transform.py      52      2    96%   62-63
 --------------------------------------------------
-TOTAL                  175     16    91%
+TOTAL                  193     11    94%
 ```
 
 ## Contributing
