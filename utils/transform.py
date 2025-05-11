@@ -30,6 +30,8 @@ def transform_data(df):
         df['Price'] = df['Price'] * 16000  
         
         def extract_rating(rating_str):
+            if rating_str is None:
+                return 0.0
             match = re.search(r'(\d+\.\d+|\d+)\s*/\s*5', rating_str)
             return float(match.group(1)) if match else 0.0
         
@@ -46,7 +48,6 @@ def transform_data(df):
         df['Size'] = df['Size'].str.replace('Size: ', '').str.strip()
         df['Gender'] = df['Gender'].str.replace('Gender: ', '').str.strip()
         df = df[(df['Size'] != '') & (df['Gender'] != '')] 
-        
         df = df.drop_duplicates(subset=['Title'], keep='first')
         logger.info(f"After removing duplicates: {len(df)} records remain.")
         

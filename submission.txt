@@ -94,14 +94,19 @@ pytest --cov=utils tests/ --cov-report term-missing
 ## Test Coverage Results
 Berikut adalah hasil test coverage berdasarkan perintah `pytest --cov=utils tests/ --cov-report term-missing`:
 ```bash 
+== tests coverage === 
+coverage: platform win32, python 3.12.6-final-0  
+
 Name                 Stmts   Miss  Cover   Missing
 --------------------------------------------------
 utils\__init__.py        0      0   100%
 utils\extract.py        80      9    89%   55-57, 93-95, 112-114
 utils\load.py           61      0   100%
-utils\transform.py      52      2    96%   62-63
+utils\transform.py      54      5    91%   63-64, 73-75
 --------------------------------------------------
-TOTAL                  193     11    94%
+TOTAL                  195     14    93%
+
+28 passed in 3.15s
 ```
 ## URL Google Sheets
 Hasil data disimpan di Google Sheets dengan nama `ETL_Pipeline_Results`. URL-nya adalah:
